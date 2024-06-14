@@ -3,6 +3,8 @@ import { query,validationResult,checkSchema,matchedData } from "express-validato
 import { mockUsers } from "../utils/constants.mjs";
 import { validationSchema } from "../utils/validationSchema.mjs";
 import { resolveIndexbyUserid } from "../utils/middleware.mjs";
+import { User } from "../mongoose/schemas/user.mjs";
+import { hashPassword } from "../utils/helpers.mjs";
 
 const router = Router();
 
@@ -42,18 +44,41 @@ router.get(
 );
 
 //Add users
-router.post("/api/users", checkSchema(validationSchema), (request, response) => {
-    const result = validationResult(request);
-    console.log(result.isEmpty(), "checkrequest");
-    if (!result.isEmpty())
-      return response.status(400).send({ errors: result.array() });
-    const data = matchedData(request);
-    console.log("checkdata", data);
-    // const { body } = request;
-    const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...data };
-    mockUsers.push(newUser);
-    return response.status(201).send(newUser);
-  });
+
+//databse user
+
+router.post("/api/users",checkSchema(validationSchema),async (request,response)=>{
+  const result=validationResult(request)
+  if(!result.isEmpty()) return response.status(400).send(result.array())
+    const data=matchedData(request)
+  console.log(data,'checkresult1')
+  // const {body}=request;
+  data.password=hashPassword(data.password)
+  console.log(data,'checkresult2')
+
+  const newUser=new User(data)
+try{
+  const savedUser=await newUser.save()
+  return response.status(201).send(savedUser)
+}catch(error){
+console.log(error);
+  return response.sendStatus(400)
+}
+
+})
+
+// router.post("/api/users", checkSchema(validationSchema), (request, response) => {
+//     const result = validationResult(request);
+//     console.log(result.isEmpty(), "checkrequest");
+//     if (!result.isEmpty())
+//       return response.status(400).send({ errors: result.array() });
+//     const data = matchedData(request);
+//     console.log("checkdata", data);
+//     // const { body } = request;
+//     const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...data };
+//     mockUsers.push(newUser);
+//     return response.status(201).send(newUser);
+//   });
 
   //getUser
 router.get("/api/users/:id", resolveIndexbyUserid, (request, response) => {

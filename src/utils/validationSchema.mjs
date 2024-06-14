@@ -15,6 +15,11 @@ export const validationSchema = {
     },
   },
   displayName: {
-    notEmpty: true,
+    notEmpty: {
+      errorMessage:"Password cannot be empty"
+    },
   },
+  password:{
+    notEmpty:true
+  }
 };

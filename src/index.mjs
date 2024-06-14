@@ -5,8 +5,14 @@ import session from "express-session";
 import { mockUsers } from "./utils/constants.mjs";
 import passport from "passport";
 import "./strategies/local-strategy.mjs";
+import mongoose from "mongoose";
 
 const app = express();
+
+mongoose.connect("mongodb://localhost/DemoDB")
+.then(()=>console.log("Connected to a database"))
+.catch((error)=>console.log(error,'error connecting db'))
+
 app.use(express.json());
 app.use(cookieParser("helloworld"));
 app.use(
